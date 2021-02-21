@@ -1,0 +1,39 @@
+# ui.yaml
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: dotnetkonf-ui
+  labels:
+    app: dotnetkonf-ui
+spec:
+  minReadySeconds: 5
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 60
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: dotnetkonf-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dotnetkonf-ui
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: dotnetkonf-ui
+          # Zero point
+          image: selcukusta/dotnetkonf-ui:1.0.0
+          # Title is changed, test failed!
+          # image: selcukusta/dotnetkonf-ui:1.0.1
+          # Title is OK, new paragraph is added
+          # image: selcukusta/dotnetkonf-ui:1.0.2
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+      nodeSelector:
+        beta.kubernetes.io/os: linux

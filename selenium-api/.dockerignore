@@ -1,0 +1,6 @@
+**
+!Controllers/
+!Models/
+!*.json
+!*.cs
+!*.csproj

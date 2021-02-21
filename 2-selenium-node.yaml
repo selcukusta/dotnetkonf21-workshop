@@ -1,0 +1,46 @@
+#selenium-node.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenium-node-chrome
+  namespace: selenium
+  labels:
+    app: selenium-node-chrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: selenium-node-chrome
+  template:
+    metadata:
+      labels:
+        app: selenium-node-chrome
+    spec:
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+      containers:
+        - name: selenium-node-chrome
+          # image: selenium/node-chrome:3.141.59
+          # ports:
+          #   - containerPort: 5555
+          image: selenium/node-chrome-debug:3.141.59
+          ports:
+            - containerPort: 5900
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          env:
+            - name: HUB_HOST
+              value: "selenium-hub"
+            - name: HUB_PORT
+              value: "4444"
+            - name: NODE_MAX_INSTANCES
+              value: "5"
+            - name: NODE_MAX_SESSION
+              value: "5"
+          resources:
+            limits:
+              memory: "1000Mi"
+              cpu: ".5"

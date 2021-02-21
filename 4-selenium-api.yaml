@@ -1,0 +1,48 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ui-tests-api
+spec:
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: ui-tests-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 100%
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ui-tests-api
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: ui-tests-api
+          image: selcukusta/ui-tests-api:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            limits:
+              memory: "250Mi"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ui-tests-api
+  labels:
+    name: ui-tests-api
+spec:
+  type: ClusterIP
+  selector:
+    app: ui-tests-api
+  ports:
+    - port: 80
+      name: http
+      targetPort: 80

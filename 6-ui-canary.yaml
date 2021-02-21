@@ -1,0 +1,79 @@
+apiVersion: flagger.app/v1beta1
+kind: AlertProvider
+metadata:
+  name: dev-slack
+spec:
+  type: slack
+  channel: deployment-alerts
+  username: flagger-bot
+  address: "##### SLACK_WEBHOOK_ADDRESS #####"
+---
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: dotnetkonf-ui
+spec:
+  provider: istio
+  # deployment reference
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dotnetkonf-ui
+  # the maximum time in seconds for the canary deployment
+  # to make progress before it is rollback (default 600s)
+  progressDeadlineSeconds: 60
+  # HPA reference (optional)
+  # autoscalerRef:
+  #   apiVersion: autoscaling/v2beta2
+  #   kind: HorizontalPodAutoscaler
+  #   name: podinfo
+  service:
+    port: 80
+    portDiscovery: true
+    gateways:
+      - "##### ISTIO_GATEWAY_NAME #####"
+    hosts:
+      # - mail.google.com
+      - "##### HOST_NAME #####"
+  analysis:
+    alerts:
+      - name: "on-call Slack"
+        severity: info #warn, error
+        providerRef:
+          name: dev-slack
+    # schedule interval (default 60s)
+    interval: 20s
+    # max number of failed iterations before rollback
+    threshold: 1
+    # total number of iterations
+    iterations: 1
+    # canary match condition
+    # match:
+    #   - headers:
+    #       user-agent:
+    #         regex: ".*Firefox.*"
+    #   - headers:
+    #       cookie:
+    #         regex: "^(.*?;)?(type=insider)(;.*)?$"
+    # metrics:
+    #   - name: request-success-rate
+    #     # minimum req success rate (non 5xx responses)
+    #     # percentage (0-100)
+    #     thresholdRange:
+    #       min: 99
+    #     interval: 1m
+    #   - name: request-duration
+    #     # maximum req duration P99
+    #     # milliseconds
+    #     thresholdRange:
+    #       max: 500
+    #     interval: 30s
+
+    # generate ui tests
+    webhooks:
+      - name: "ui test"
+        type: rollout
+        url: http://ui-tests-api.default.svc.cluster.local:80/BasicTest
+        timeout: 1m
+        metadata:
+          port: "80"
